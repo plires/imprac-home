@@ -6,7 +6,12 @@ export async function GET() {
       next: { revalidate: 60 },
     })
     const data = await res.json()
-    return NextResponse.json(data)
+    const products = data.map((p: any) => ({
+      ...p,
+      espesores: typeof p.espesores === "string" ? JSON.parse(p.espesores) : p.espesores ?? [],
+      ambiente: typeof p.ambiente === "string" ? JSON.parse(p.ambiente) : p.ambiente ?? [],
+    }))
+    return NextResponse.json(products)
   } catch (error) {
     console.error("Error fetching products:", error)
     return NextResponse.json(
