@@ -1,25 +1,12 @@
 import { NextResponse } from "next/server"
-import pool from "@/lib/db"
-import { type Product } from "@/lib/products"
 
 export async function GET() {
   try {
-    const [rows] = await pool.query(
-      "SELECT * FROM products ORDER BY nombre_comercial"
-    )
-    const products = (rows as any[]).map((row) => {
-      const precio_caja = Number(row.precio_caja)
-      const m2_por_caja = Number(row.m2_por_caja)
-      return {
-        ...row,
-        precio_caja,
-        m2_por_caja,
-        precio_m2: precio_caja / m2_por_caja,
-        garantia_anos: Number(row.garantia_anos),
-        stock_cajas: Number(row.stock_cajas),
-      }
+    const res = await fetch("https://imprac.com.ar/api/products.php", {
+      next: { revalidate: 60 },
     })
-    return NextResponse.json(products as Product[])
+    const data = await res.json()
+    return NextResponse.json(data)
   } catch (error) {
     console.error("Error fetching products:", error)
     return NextResponse.json(
