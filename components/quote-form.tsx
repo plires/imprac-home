@@ -47,7 +47,7 @@ export function QuoteForm({ product, open, onOpenChange }: QuoteFormProps) {
     }
 
     try {
-      const res = await fetch("https://plires.test/api/quote.php", {
+      const res = await fetch("https://hogar.imprac.com.ar/api/quote.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
