@@ -14,9 +14,9 @@ function scrollTo(href: string) {
 }
 
 const contactInfo = [
-  { label: "Email",      value: "ventas@imprac.com" },
-  { label: "Teléfono",   value: "+54 11 0000-0000" },
-  { label: "Ubicación",  value: "Buenos Aires, Argentina" },
+  { label: "Email",      value: "info@hogar.imprac.com.ar" },
+  { label: "Teléfono",   value: "+54 11.4488.4418" },
+  { label: "Ubicación",  value: "Barragan 855, Ciudadela Norte - Buenos Aires Argentina." },
 ]
 
 export function CatalogFooter() {
@@ -83,7 +83,7 @@ export function CatalogFooter() {
         {/* ── Barra inferior ── */}
         <div className="flex flex-col items-center justify-between gap-3 pt-8 md:flex-row">
           <p className="text-xs text-zinc-600">
-            © 2026 Imprac Home. Todos los derechos reservados.
+            © 2026 Imprac Estructure Hogar. Todos los derechos reservados.
           </p>
           <p className="text-xs text-zinc-600">
             Precios de referencia sujetos a cambios sin previo aviso.
