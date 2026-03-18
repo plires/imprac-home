@@ -1,11 +1,17 @@
+"use client"
+
 import Image from "next/image"
 
 const catalogLinks = [
-  "Todos los productos",
-  "Colección Claro",
-  "Colección Oscuro",
-  "Especificaciones técnicas",
+  { label: "Catálogo",         href: "#catalogo"         },
+  { label: "Especificaciones", href: "#especificaciones"  },
+  { label: "Contacto",         href: "#contacto"          },
 ]
+
+function scrollTo(href: string) {
+  const el = document.querySelector(href)
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
+}
 
 const contactInfo = [
   { label: "Email",      value: "ventas@imprac.com" },
@@ -42,11 +48,14 @@ export function CatalogFooter() {
               Catálogo
             </h4>
             <ul className="space-y-3">
-              {catalogLinks.map((item) => (
-                <li key={item}>
-                  <span className="cursor-pointer text-sm text-zinc-400 transition-colors hover:text-white">
-                    {item}
-                  </span>
+              {catalogLinks.map(({ label, href }) => (
+                <li key={label}>
+                  <button
+                    onClick={() => scrollTo(href)}
+                    className="cursor-pointer text-sm text-zinc-400 transition-colors hover:text-white"
+                  >
+                    {label}
+                  </button>
                 </li>
               ))}
             </ul>

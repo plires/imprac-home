@@ -6,20 +6,50 @@ import { Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const NAV_ITEMS = [
-  { label: "Catálogo",        active: true  },
-  { label: "Especificaciones", active: false },
-  { label: "Contacto",        active: false },
+  { label: "Catálogo",        href: "#catalogo"         },
+  { label: "Especificaciones", href: "#especificaciones" },
+  { label: "Contacto",        href: "#contacto"          },
 ]
+
+function scrollTo(href: string) {
+  const el = document.querySelector(href)
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
+}
 
 export function CatalogHeader() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled,   setScrolled]   = useState(false)
+  const [active,     setActive]     = useState<string | null>(null)
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 6)
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  // Highlight the nav item whose section is currently in view
+  useEffect(() => {
+    const ids = NAV_ITEMS.map((item) => item.href.slice(1))
+    const observers: IntersectionObserver[] = []
+
+    ids.forEach((id) => {
+      const el = document.getElementById(id)
+      if (!el) return
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActive(id) },
+        { rootMargin: "-40% 0px -55% 0px" }
+      )
+      obs.observe(el)
+      observers.push(obs)
+    })
+
+    return () => observers.forEach((obs) => obs.disconnect())
+  }, [])
+
+  function handleNav(href: string) {
+    scrollTo(href)
+    setMobileOpen(false)
+  }
 
   return (
     <header
@@ -44,22 +74,26 @@ export function CatalogHeader() {
 
         {/* ── Desktop nav ── */}
         <nav className="hidden items-center gap-1 md:flex">
-          {NAV_ITEMS.map(({ label, active }) => (
-            <span
-              key={label}
-              className={cn(
-                "relative cursor-pointer select-none rounded-md px-4 py-2 text-sm font-medium transition-colors duration-150",
-                active
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
-              )}
-            >
-              {label}
-              {active && (
-                <span className="absolute bottom-1 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-primary" />
-              )}
-            </span>
-          ))}
+          {NAV_ITEMS.map(({ label, href }) => {
+            const isActive = active === href.slice(1)
+            return (
+              <button
+                key={label}
+                onClick={() => handleNav(href)}
+                className={cn(
+                  "relative cursor-pointer select-none rounded-md px-4 py-2 text-sm font-medium transition-colors duration-150",
+                  isActive
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                )}
+              >
+                {label}
+                {isActive && (
+                  <span className="absolute bottom-1 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-primary" />
+                )}
+              </button>
+            )
+          })}
         </nav>
 
         {/* ── Hamburger ── */}
@@ -97,20 +131,23 @@ export function CatalogHeader() {
         )}
       >
         <nav className="flex flex-col gap-0.5 bg-card px-4 py-3">
-          {NAV_ITEMS.map(({ label, active }) => (
-            <span
-              key={label}
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "cursor-pointer select-none rounded-lg px-4 py-3 text-sm font-medium transition-colors",
-                active
-                  ? "bg-primary/10 text-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
-              )}
-            >
-              {label}
-            </span>
-          ))}
+          {NAV_ITEMS.map(({ label, href }) => {
+            const isActive = active === href.slice(1)
+            return (
+              <button
+                key={label}
+                onClick={() => handleNav(href)}
+                className={cn(
+                  "cursor-pointer select-none rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-primary/10 text-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                )}
+              >
+                {label}
+              </button>
+            )
+          })}
         </nav>
       </div>
     </header>

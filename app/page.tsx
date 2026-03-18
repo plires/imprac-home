@@ -10,6 +10,7 @@ import { ProductFeatures } from "@/components/product-features"
 import { TechSpecs } from "@/components/tech-specs"
 import { ImageCarousel } from "@/components/image-carousel"
 import { CatalogFooter } from "@/components/catalog-footer"
+import { ContactForm } from "@/components/contact-form"
 import { type Product } from "@/lib/products"
 
 export default function CatalogPage() {
@@ -65,7 +66,7 @@ export default function CatalogPage() {
         onReset={handleReset}
       />
 
-      <section className="mx-auto max-w-7xl px-6 py-8">
+      <section id="catalogo" className="mx-auto max-w-7xl px-6 py-8">
         <div className="mb-6 flex items-baseline justify-between">
           <p className="text-sm text-muted-foreground">
             <span className="font-semibold text-foreground">
@@ -92,8 +93,11 @@ export default function CatalogPage() {
       />
 
       <ProductFeatures />
-      <TechSpecs />
+      <div id="especificaciones">
+        <TechSpecs />
+      </div>
       <ImageCarousel />
+      <ContactForm />
       <CatalogFooter />
     </main>
   )
