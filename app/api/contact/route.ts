@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import pool from "@/lib/db"
 import nodemailer from "nodemailer"
+import { contactEmailHtml, contactEmailText } from "@/lib/emails/contact-template"
 
 export async function POST(req: Request) {
   try {
@@ -19,30 +20,33 @@ export async function POST(req: Request) {
     )
 
     // ── Enviar email al administrador ─────────────────────────────────
-    const transporter = nodemailer.createTransport({
-      host:   process.env.SMTP_HOST,
-      port:   Number(process.env.SMTP_PORT) || 1025,
-      secure: process.env.SMTP_ENCRYPTION === "ssl",
-      auth:   process.env.SMTP_USER
-        ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-        : undefined,
+    const fecha = new Date().toLocaleString("es-AR", {
+      day: "2-digit", month: "2-digit", year: "numeric",
+      hour: "2-digit", minute: "2-digit",
     })
 
-    await transporter.sendMail({
-      from:    `"${process.env.MAIL_FROM_NAME}" <${process.env.MAIL_FROM_ADDRESS}>`,
-      to:      process.env.MAIL_TO_ADDRESS,
-      subject: `Nueva consulta de contacto — ${nombre}`,
-      html: `
-        <h2 style="margin:0 0 16px">Nueva consulta de contacto</h2>
-        <table style="border-collapse:collapse;font-size:14px">
-          <tr><td style="padding:6px 16px 6px 0;color:#666">Nombre</td>    <td style="padding:6px 0"><strong>${nombre}</strong></td></tr>
-          <tr><td style="padding:6px 16px 6px 0;color:#666">Email</td>     <td style="padding:6px 0"><a href="mailto:${email}">${email}</a></td></tr>
-          <tr><td style="padding:6px 16px 6px 0;color:#666">Teléfono</td>  <td style="padding:6px 0">${telefono || "—"}</td></tr>
-          <tr><td style="padding:6px 16px 6px 0;color:#666;vertical-align:top">Comentarios</td>
-              <td style="padding:6px 0;white-space:pre-wrap">${comentarios || "—"}</td></tr>
-        </table>
-      `,
-    })
+    const mailTo   = process.env.MAIL_TO_ADDRESS
+    const mailFrom = process.env.MAIL_FROM_ADDRESS
+
+    if (mailTo && mailFrom) {
+      const transporter = nodemailer.createTransport({
+        host:   process.env.SMTP_HOST,
+        port:   Number(process.env.SMTP_PORT) || 1025,
+        secure: process.env.SMTP_ENCRYPTION === "ssl",
+        auth:   process.env.SMTP_USER
+          ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+          : undefined,
+      })
+
+      await transporter.sendMail({
+        from:    `"${process.env.MAIL_FROM_NAME}" <${mailFrom}>`,
+        to:      mailTo,
+        replyTo: `"${nombre}" <${email}>`,
+        subject: `Nueva consulta de contacto — ${nombre}`,
+        html:    contactEmailHtml({ nombre, email, telefono, comentarios, fecha }),
+        text:    contactEmailText({ nombre, email, telefono, comentarios }),
+      })
+    }
 
     return NextResponse.json({ ok: true })
   } catch (error) {
