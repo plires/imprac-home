@@ -1,19 +1,51 @@
 "use client"
 
 import { useState } from "react"
-import { Send } from "lucide-react"
+import { Send, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 
 export function ContactForm() {
-  const [form, setForm] = useState({ nombre: "", email: "", telefono: "", comentarios: "" })
-  const [sent, setSent] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [loading,   setLoading]   = useState(false)
+  const [error,     setError]     = useState<string | null>(null)
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
-  }
-
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setSent(true)
+    setLoading(true)
+    setError(null)
+
+    const form = e.currentTarget
+    const data = new FormData(form)
+
+    const body = {
+      nombre:      data.get("nombre")      as string,
+      email:       data.get("email")       as string,
+      telefono:    data.get("telefono")    as string,
+      comentarios: data.get("comentarios") as string,
+    }
+
+    try {
+      const res = await fetch("/api/contact", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(body),
+      })
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}))
+        throw new Error(json?.error ?? "Error al enviar el mensaje.")
+      }
+
+      setSubmitted(true)
+      form.reset()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ocurrió un error. Por favor intentá de nuevo.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -35,11 +67,9 @@ export function ContactForm() {
           </p>
         </div>
 
-        {sent ? (
+        {submitted ? (
           <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-card py-16 text-center">
-            <div className="flex size-14 items-center justify-center rounded-full bg-primary/10">
-              <Send className="size-6 text-primary" />
-            </div>
+            <CheckCircle className="size-12 text-primary" />
             <h4 className="text-lg font-semibold text-foreground">¡Mensaje enviado!</h4>
             <p className="max-w-sm text-sm text-muted-foreground">
               Gracias por contactarnos. Te responderemos a la brevedad.
@@ -52,79 +82,76 @@ export function ContactForm() {
           >
             {/* Nombre */}
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="nombre" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Nombre
-              </label>
-              <input
+              <Label htmlFor="nombre" className="text-xs">Nombre</Label>
+              <Input
                 id="nombre"
                 name="nombre"
-                type="text"
                 required
-                value={form.nombre}
-                onChange={handleChange}
                 placeholder="Tu nombre"
-                className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none ring-offset-background transition focus:border-primary focus:ring-2 focus:ring-ring"
+                className="bg-background"
               />
             </div>
 
             {/* Email */}
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Email
-              </label>
-              <input
+              <Label htmlFor="email" className="text-xs">Email</Label>
+              <Input
                 id="email"
                 name="email"
                 type="email"
                 required
-                value={form.email}
-                onChange={handleChange}
                 placeholder="tu@email.com"
-                className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none ring-offset-background transition focus:border-primary focus:ring-2 focus:ring-ring"
+                className="bg-background"
               />
             </div>
 
             {/* Teléfono */}
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="telefono" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Teléfono
-              </label>
-              <input
+              <Label htmlFor="telefono" className="text-xs">Teléfono</Label>
+              <Input
                 id="telefono"
                 name="telefono"
                 type="tel"
-                value={form.telefono}
-                onChange={handleChange}
                 placeholder="+54 11 0000-0000"
-                className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none ring-offset-background transition focus:border-primary focus:ring-2 focus:ring-ring"
+                className="bg-background"
               />
             </div>
 
-            {/* Comentarios — ocupa columna completa en md */}
+            {/* Comentarios — full width */}
             <div className="flex flex-col gap-1.5 md:col-span-2">
-              <label htmlFor="comentarios" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Comentarios
-              </label>
-              <textarea
+              <Label htmlFor="comentarios" className="text-xs">Comentarios</Label>
+              <Textarea
                 id="comentarios"
                 name="comentarios"
                 rows={4}
-                value={form.comentarios}
-                onChange={handleChange}
                 placeholder="Contanos sobre tu proyecto..."
-                className="resize-none rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none ring-offset-background transition focus:border-primary focus:ring-2 focus:ring-ring"
+                className="resize-none bg-background"
               />
             </div>
 
+            {/* Error */}
+            {error && (
+              <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 md:col-span-2">
+                <AlertCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
+                <p className="text-xs text-destructive">{error}</p>
+              </div>
+            )}
+
             {/* Submit */}
             <div className="md:col-span-2">
-              <button
-                type="submit"
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <Send className="size-4" />
-                Enviar mensaje
-              </button>
+              <Button type="submit" size="lg" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 size-4" />
+                    Enviar mensaje
+                  </>
+                )}
+              </Button>
             </div>
           </form>
         )}
