@@ -8,8 +8,12 @@ import { Badge } from "@/components/ui/badge"
 // ── Slides: reemplazá los src por tus imágenes hero definitivas ──────────────
 const SLIDES = [
   { src: "/images/hero-img.webp",         alt: "Ambiente con piso SPC Imprac instalado" },
-  { src: "/images/carrusel/piso-5.webp",  alt: "Sala de estar con piso SPC Imprac"      },
-  { src: "/images/carrusel/piso-10.webp", alt: "Comedor con piso SPC Imprac instalado"  },
+  { src: "/images/hero-img-2.webp",       alt: "Sala de estar con piso SPC Imprac"      },
+  { src: "/images/hero-img-3.webp",       alt: "pista de baile con piso SPC Imprac instalado"  },
+  { src: "/images/hero-img-4.webp",       alt: "cocina con piso SPC Imprac instalado"  },
+  { src: "/images/hero-img-5.webp",       alt: "comedor con piso SPC Imprac instalado"  },
+  { src: "/images/hero-img-6.webp",       alt: "alfombra sobre piso SPC Imprac instalado"  },
+  { src: "/images/hero-img-7.webp",       alt: "piso waterproof SPC Imprac instalado"  },
 ]
 
 const AUTOPLAY_MS = 5000
@@ -72,11 +76,11 @@ export function HeroBanner() {
         </div>
       </div>
 
-      {/* ── Overlay izquierda → derecha (legibilidad del texto) ── */}
-      <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/90 via-zinc-950/55 to-zinc-950/25 xl:via-zinc-950/28 xl:to-transparent" />
+      {/* Overlay ajustado para desvanecerse antes de la mitad o al 60% */}
+      <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/90 via-zinc-950/40 to-transparent xl:w-2/3" />
 
       {/* ── Overlay inferior (profundidad) ── */}
-      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/55 via-transparent to-transparent" />
+      {/* <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/55 via-transparent to-transparent" /> */}
 
       {/* ── Contenido ── */}
       <div className="relative z-10 mx-auto w-full px-6 py-16 md:py-24 lg:py-32 lg:pl-32">
