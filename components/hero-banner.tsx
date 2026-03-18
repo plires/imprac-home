@@ -1,18 +1,76 @@
-import Image from "next/image"
+"use client"
+
+import { useState, useEffect, useCallback } from "react"
+import useEmblaCarousel from "embla-carousel-react"
+import type { EmblaCarouselType } from "embla-carousel"
 import { Badge } from "@/components/ui/badge"
 
+// ── Slides: reemplazá los src por tus imágenes hero definitivas ──────────────
+const SLIDES = [
+  { src: "/images/hero-img.webp",         alt: "Ambiente con piso SPC Imprac instalado" },
+  { src: "/images/carrusel/piso-5.webp",  alt: "Sala de estar con piso SPC Imprac"      },
+  { src: "/images/carrusel/piso-10.webp", alt: "Comedor con piso SPC Imprac instalado"  },
+]
+
+const AUTOPLAY_MS = 5000
+
+function useDotButton(emblaApi: EmblaCarouselType | undefined) {
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [scrollSnaps,   setScrollSnaps]   = useState<number[]>([])
+
+  const onDotButtonClick = useCallback(
+    (index: number) => emblaApi?.scrollTo(index),
+    [emblaApi]
+  )
+
+  useEffect(() => {
+    if (!emblaApi) return
+    const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap())
+    const onReInit = () => {
+      setScrollSnaps(emblaApi.scrollSnapList())
+      onSelect()
+    }
+    setScrollSnaps(emblaApi.scrollSnapList())
+    emblaApi.on("select", onSelect)
+    emblaApi.on("reInit", onReInit)
+    return () => {
+      emblaApi.off("select", onSelect)
+      emblaApi.off("reInit", onReInit)
+    }
+  }, [emblaApi])
+
+  return { selectedIndex, scrollSnaps, onDotButtonClick }
+}
+
 export function HeroBanner() {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 40 })
+  const { selectedIndex, scrollSnaps, onDotButtonClick } = useDotButton(emblaApi)
+
+  // Autoplay
+  useEffect(() => {
+    if (!emblaApi) return
+    const timer = setInterval(() => emblaApi.scrollNext(), AUTOPLAY_MS)
+    return () => clearInterval(timer)
+  }, [emblaApi])
+
   return (
     <section className="relative flex min-h-[540px] items-center overflow-hidden border-b border-border md:min-h-[640px] lg:min-h-[750px]">
 
-      {/* ── Imagen de fondo ── */}
-      <Image
-        src="/images/hero-img.webp"
-        alt="Ambiente con piso SPC Imprac instalado"
-        fill
-        className="object-cover object-center"
-        priority
-      />
+      {/* ── Carrusel de fondo ── */}
+      <div ref={emblaRef} className="absolute inset-0">
+        <div className="flex h-full">
+          {SLIDES.map(({ src, alt }) => (
+            <div key={src} className="relative min-w-full flex-shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={src}
+                alt={alt}
+                className="h-full w-full object-cover object-center"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* ── Overlay izquierda → derecha (legibilidad del texto) ── */}
       <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/90 via-zinc-950/55 to-zinc-950/25 xl:via-zinc-950/28 xl:to-transparent" />
@@ -21,7 +79,7 @@ export function HeroBanner() {
       <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/55 via-transparent to-transparent" />
 
       {/* ── Contenido ── */}
-      <div className="relative z-10 mx-auto w-full lg:pl-32 px-6 py-16 md:py-24 lg:py-32">
+      <div className="relative z-10 mx-auto w-full px-6 py-16 md:py-24 lg:py-32 lg:pl-32">
         <div className="max-w-2xl xl:max-w-xl">
 
           <Badge
@@ -51,6 +109,22 @@ export function HeroBanner() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40">
               Colección profesional
             </p>
+          </div>
+
+          {/* ── Dots ── */}
+          <div className="mt-8 flex gap-2">
+            {scrollSnaps.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => onDotButtonClick(i)}
+                aria-label={`Slide ${i + 1}`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === selectedIndex
+                    ? "w-6 bg-amber-400"
+                    : "w-1.5 bg-white/30 hover:bg-white/50"
+                }`}
+              />
+            ))}
           </div>
 
         </div>
